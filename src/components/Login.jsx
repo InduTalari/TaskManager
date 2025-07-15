@@ -8,7 +8,7 @@ export default function Login({ onSwitch, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://taskmanager-backend-2-fmff.onrender.com/api/auth/login", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
         email,
         password,
       });
@@ -16,7 +16,7 @@ export default function Login({ onSwitch, onSuccess }) {
       const { token, user } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      onSuccess(user); // 👈 sends user to App.jsx
+      onSuccess(user);
     } catch (err) {
       alert("Invalid credentials");
     }

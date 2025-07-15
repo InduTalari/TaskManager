@@ -17,14 +17,18 @@ export default function SignUp({ onSwitch }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("https://taskmanager-backend-2-fmff.onrender.com/api/auth/register", form);
-      setMessage("Account created successfully!");
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/register`, form);
+      setMessage("✅ Account created successfully!");
       setTimeout(() => {
         setMessage("");
-        onSwitch(); // 👈 switch to login after signup
+        onSwitch(); // go to login
       }, 1500);
     } catch (err) {
-      alert("User already exists or error occurred.");
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(err.response.data.message);
+      } else {
+        alert("User already exists or an error occurred.");
+      }
     }
   };
 
