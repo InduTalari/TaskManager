@@ -1,4 +1,3 @@
-// src/components/Dashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
 
 export default function Dashboard({ username = "User", onSignOut }) {
@@ -22,12 +21,12 @@ export default function Dashboard({ username = "User", onSignOut }) {
     if (saved) setTasks(saved);
   }, []);
 
-  // Persist tasks
+  // Save tasks to localStorage
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // Close dropdown on outside click
+  // Close dropdown when clicked outside
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -42,44 +41,39 @@ export default function Dashboard({ username = "User", onSignOut }) {
     const { title, description, dueDate, priority } = form;
     if (!title.trim() || !dueDate) return;
 
-    setTasks([
-      {
-        id: Date.now(),
-        title: title.trim(),
-        description: description.trim(),
-        dueDate,
-        priority,
-        completed: false,
-      },
-      ...tasks,
-    ]);
-
+    const newTask = {
+      id: Date.now(),
+      title: title.trim(),
+      description: description.trim(),
+      dueDate,
+      priority,
+      completed: false,
+    };
+    setTasks([newTask, ...tasks]);
     setForm({ title: "", description: "", dueDate: "", priority: "normal" });
     setModalOpen(false);
   };
 
   const toggleComplete = (id) => {
-    setTasks(tasks.map((t) =>
-      t.id === id ? { ...t, completed: !t.completed } : t
-    ));
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
     setOptionsTaskId(null);
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Delete this task?")) {
-      setTasks(tasks.filter((t) => t.id !== id));
+      setTasks(tasks.filter(t => t.id !== id));
       setOptionsTaskId(null);
     }
   };
 
-  const filtered = tasks.filter((t) => {
+  const filtered = tasks.filter(t => {
     if (filter === "completed" && !t.completed) return false;
     if (filter === "pending" && t.completed) return false;
     return t.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const total = tasks.length;
-  const completedCount = tasks.filter((t) => t.completed).length;
+  const completedCount = tasks.filter(t => t.completed).length;
   const pendingCount = total - completedCount;
   const completionRate = total ? Math.round((completedCount / total) * 100) : 0;
 
@@ -88,8 +82,8 @@ export default function Dashboard({ username = "User", onSignOut }) {
       {/* Header */}
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Task Manager</h1>
-          <p>Welcome, <span className="font-medium">{username}</span>!</p>
+          <h1 className="text-3xl font-bold">Task Manager</h1>
+          <p className="text-gray-600 text-lg">Welcome, <span className="font-semibold text-purple-700">{username}</span>!</p>
         </div>
         <button onClick={onSignOut} className="text-purple-600 hover:underline">
           Sign Out
@@ -112,7 +106,7 @@ export default function Dashboard({ username = "User", onSignOut }) {
       </div>
 
       {/* Controls */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6">
         <input
           className="flex-1 border rounded px-3 py-2"
           placeholder="Search tasks..."
@@ -141,9 +135,10 @@ export default function Dashboard({ username = "User", onSignOut }) {
         <table className="w-full">
           <thead className="bg-purple-600 text-white">
             <tr>
-              {["#", "Title", "Status", "Actions"].map((h) => (
-                <th key={h} className="px-4 py-2 text-left">{h}</th>
-              ))}
+              <th className="px-4 py-2 text-left">#</th>
+              <th className="px-4 py-2 text-left">Title</th>
+              <th className="px-4 py-2 text-left">Status</th>
+              <th className="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -154,34 +149,34 @@ export default function Dashboard({ username = "User", onSignOut }) {
                 </td>
               </tr>
             ) : (
-              filtered.map((t, i) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2">{i + 1}</td>
-                  <td className="px-4 py-2">{t.title}</td>
+              filtered.map((task, index) => (
+                <tr key={task.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2">{task.title}</td>
                   <td className="px-4 py-2">
                     <span className={`px-2 py-1 rounded-full text-xs ${
-                      t.completed ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                      task.completed ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                     }`}>
-                      {t.completed ? "Completed" : "Pending"}
+                      {task.completed ? "Completed" : "Pending"}
                     </span>
                   </td>
                   <td ref={dropdownRef} className="px-4 py-2 relative">
                     <button
-                      onClick={() => setOptionsTaskId(optionsTaskId === t.id ? null : t.id)}
+                      onClick={() => setOptionsTaskId(optionsTaskId === task.id ? null : task.id)}
                       className="px-2 hover:bg-gray-200 rounded"
                     >
                       ⋮
                     </button>
-                    {optionsTaskId === t.id && (
+                    {optionsTaskId === task.id && (
                       <div className="absolute right-0 mt-1 bg-white border rounded shadow z-10">
                         <button
-                          onClick={() => toggleComplete(t.id)}
+                          onClick={() => toggleComplete(task.id)}
                           className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                         >
-                          {t.completed ? "Undo" : "Mark Completed"}
+                          {task.completed ? "Undo" : "Mark Completed"}
                         </button>
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => handleDelete(task.id)}
                           className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
                         >
                           Delete
@@ -198,9 +193,9 @@ export default function Dashboard({ username = "User", onSignOut }) {
 
       {/* Create Task Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-semibold">Create Task</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+            <h2 className="text-xl font-semibold">Create Task</h2>
             <input
               type="text"
               placeholder="Title"
@@ -239,7 +234,10 @@ export default function Dashboard({ username = "User", onSignOut }) {
               >
                 Cancel
               </button>
-              <button onClick={handleAdd} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+              <button
+                onClick={handleAdd}
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              >
                 Create
               </button>
             </div>

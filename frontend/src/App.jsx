@@ -1,34 +1,46 @@
-import React, { useState } from "react";
-import { ToastContainer } from "react-toastify";
+import React, { useState, useEffect } from "react";
 import Login from "./components/Login";
-import Signup from "./components/Signup";
+import SignUp from "./components/SignUp";
 import Dashboard from "./components/Dashboard";
-import "react-toastify/dist/ReactToastify.css";
 
 function App() {
-  const [view, setView] = useState("login");
-  const [username, setUsername] = useState("");  // Add this
+  const [page, setPage] = useState("login");
+  const [username, setUsername] = useState("");
 
-  const goToSignup = () => setView("signup");
-  const goToLogin = () => setView("login");
-  const goToDashboard = (user) => {
-    setUsername(user);  // Save username
-    setView("dashboard");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (token && user) {
+      setUsername(user.name);
+      setPage("dashboard");
+    }
+  }, []);
+
+  const handleLoginSuccess = (user) => {
+    localStorage.setItem("user", JSON.stringify(user));
+    setUsername(user.name); // 👈 Set username
+    setPage("dashboard");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setPage("login");
   };
 
   return (
     <>
-      <ToastContainer position="top-center" />
-      {view === "login" && (
-        <Login onSwitch={goToSignup} onSuccess={goToDashboard} />
+      {page === "login" && (
+        <Login onSwitch={() => setPage("signup")} onSuccess={handleLoginSuccess} />
       )}
-      {view === "signup" && (
-        <Signup onSwitch={goToLogin} onSuccess={goToDashboard} />
+      {page === "signup" && (
+        <SignUp onSwitch={() => setPage("login")} onSuccess={handleLoginSuccess} />
       )}
-      {view === "dashboard" && (
-        <Dashboard username={username} onSignOut={goToLogin} />
+      {page === "dashboard" && (
+        <Dashboard username={username} onSignOut={handleLogout} />
       )}
     </>
   );
 }
+
 export default App;

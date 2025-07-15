@@ -1,19 +1,31 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 export default function Login({ onSwitch, onSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = email.split("@")[0] || "User";
-    onSuccess(user);
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      onSuccess(user); // 👈 sends user to App.jsx
+    } catch (err) {
+      alert("Invalid credentials");
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 px-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
+        <h2 className="text-3xl font-bold text-center mb-6">Sign In</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm mb-1">Email</label>
@@ -21,7 +33,7 @@ export default function Login({ onSwitch, onSuccess }) {
               id="email"
               type="email"
               required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -32,24 +44,18 @@ export default function Login({ onSwitch, onSuccess }) {
               id="password"
               type="password"
               required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
-          >
+          <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded-lg">
             Sign In
           </button>
         </form>
         <p className="mt-4 text-center text-sm">
           Don’t have an account?{" "}
-          <button
-            onClick={onSwitch}
-            className="text-purple-600 font-medium hover:underline"
-          >
+          <button onClick={onSwitch} className="text-purple-600 font-medium hover:underline">
             Sign Up
           </button>
         </p>
